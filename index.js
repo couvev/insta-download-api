@@ -53,20 +53,30 @@ app.post("/save-to-sheets/", async (request, reply) => {
   const data = request.body;
 
   // Validação dos dados obrigatórios
-  if (!data.sheets_url) {
+  const sheetsUrl = data.sheets_url || data.SheetsURL;
+  const videoLink = data.video_link || data["Video Link"];
+
+  if (!sheetsUrl) {
     return reply
       .status(400)
-      .send({ error: "O campo 'sheets_url' é obrigatório" });
+      .send({ error: "O campo 'sheets_url' ou 'SheetsURL' é obrigatório" });
   }
 
-  if (!data.video_link) {
+  if (!videoLink) {
     return reply
       .status(400)
-      .send({ error: "O campo 'video_link' é obrigatório" });
+      .send({ error: "O campo 'video_link' ou 'Video Link' é obrigatório" });
   }
 
   try {
-    const result = await addRowToSheet(data.sheets_url, data);
+    // Normalizar dados para formato interno
+    const normalizedData = {
+      sheets_url: sheetsUrl,
+      video_link: videoLink,
+      ...data,
+    };
+
+    const result = await addRowToSheet(sheetsUrl, normalizedData);
 
     reply.send({
       success: true,

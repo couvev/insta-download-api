@@ -74,13 +74,13 @@ export async function addRowToSheet(sheetsUrl, data) {
     // Preparar os dados para inserção
     const rowData = prepareRowData(data);
 
-    // Adicionar a linha à planilha
-    const range = "Sheet1!A:L"; // Ajuste conforme necessário
+    // Adicionar a linha à planilha (aba Videos)
+    const range = "Videos!A:J";
 
     const response = await sheets.spreadsheets.values.append({
       spreadsheetId,
       range,
-      valueInputOption: "RAW",
+      valueInputOption: "USER_ENTERED",
       insertDataOption: "INSERT_ROWS",
       resource: {
         values: [rowData],
@@ -117,16 +117,65 @@ function extractSpreadsheetId(url) {
  * @returns {array} - Array com os valores na ordem correta
  */
 function prepareRowData(data) {
+  // Suportar ambos os formatos: novo (flat) e antigo (nested)
+  const videoLink = data.video_link || data["Video Link"] || "";
+  const hookVerbal =
+    data.hook_verbal || data["Hook Verbal"] || data.hook?.verbal || "";
+  const hookWritten =
+    data.hook_written || data["Hook Written"] || data.hook?.written || "";
+  const hookVisual =
+    data.hook_visual || data["Hook Visual"] || data.hook?.visual || "";
+
+  let format = "";
+  if (Array.isArray(data.format)) {
+    format = data.format.join(", ");
+  } else if (typeof data.format === "string") {
+    format = data.format;
+  } else if (data.Format) {
+    format = data.Format;
+  }
+
+  let contentPillars = "";
+  if (Array.isArray(data.content_pillars)) {
+    contentPillars = data.content_pillars.join(", ");
+  } else if (typeof data.content_pillars === "string") {
+    contentPillars = data.content_pillars;
+  } else if (data["Content Pillars"]) {
+    contentPillars = data["Content Pillars"];
+  }
+
+  let keywords = "";
+  if (Array.isArray(data.keywords)) {
+    keywords = data.keywords.join(", ");
+  } else if (typeof data.keywords === "string") {
+    keywords = data.keywords;
+  } else if (data.Keywords) {
+    keywords = data.Keywords;
+  }
+
+  const views = data.views || data.Views || "";
+
+  let used = "";
+  if (data.used !== undefined) {
+    used = data.used ? "Sim" : "Não";
+  } else if (data.Used !== undefined) {
+    if (typeof data.Used === "boolean") {
+      used = data.Used ? "Sim" : "Não";
+    } else {
+      used = data.Used;
+    }
+  }
+
   return [
-    data.video_link || "",
-    data.hook?.verbal || "",
-    data.hook?.written || "",
-    data.hook?.visual || "",
-    data.format ? data.format.join(", ") : "",
-    data.content_pillars ? data.content_pillars.join(", ") : "",
-    data.keywords ? data.keywords.join(", ") : "",
-    data.views || "",
-    data.used !== undefined ? (data.used ? "Sim" : "Não") : "",
+    videoLink,
+    hookVerbal,
+    hookWritten,
+    hookVisual,
+    format,
+    contentPillars,
+    keywords,
+    views,
+    used,
     new Date().toISOString(),
   ];
 }
