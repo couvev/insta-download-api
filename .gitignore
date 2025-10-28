@@ -99,3 +99,14 @@ dist
 
 # DynamoDB Local files
 .dynamodb/
+
+# Environment variables
+.env
+
+# Surveys data
+surveys.json
+
+# Google OAuth2 Credentials and Tokens
+oauth-credentials.json
+token.json
+credentials.json

@@ -52,3 +52,22 @@ Isso retornarÃ¡ um JSON com a URL do vÃ­deo disponÃ­vel para download.
 ```
 
 Baseado no projeto [instagram-video-downloader](https://github.com/riad-azz/instagram-video-downloader)
+### Endpoint de Integração com Google Sheets
+
+Para salvar dados de análise de vídeos do Instagram diretamente em uma planilha do Google Sheets:
+
+``n`POST /save-to-sheets/
+`Content-Type: application/json
+``n
+#### Configuração
+
+Antes de usar este endpoint, você precisa configurar as credenciais do Google Sheets API.
+Consulte o arquivo [GOOGLE_SHEETS_SETUP.md](./GOOGLE_SHEETS_SETUP.md) para instruções detalhadas.
+
+#### Exemplo de Uso com cURL
+
+``bash
+curl -X POST http://localhost:3000/save-to-sheets/ \
+  -H "Content-Type: application/json" \
+  -d @test-payload.json
+``
