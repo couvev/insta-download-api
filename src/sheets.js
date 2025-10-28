@@ -1,18 +1,47 @@
 import { google } from "googleapis";
 import fs from "fs";
+import "dotenv/config";
 
 const TOKEN_PATH = "./token.json";
 const CREDENTIALS_PATH = "./oauth-credentials.json";
 
 /**
  * Cria e retorna um cliente OAuth2 autenticado
+ * Prioriza variáveis de ambiente (.env) sobre arquivos JSON
  */
 async function getAuthClient() {
-  // Carregar credenciais OAuth2
+  const {
+    GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET,
+    GOOGLE_REDIRECT_URI,
+    GOOGLE_REFRESH_TOKEN,
+  } = process.env;
+
+  // Método 1: Usar variáveis de ambiente (.env) - PRIORIDADE
+  if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET && GOOGLE_REFRESH_TOKEN) {
+    const oAuth2Client = new google.auth.OAuth2(
+      GOOGLE_CLIENT_ID,
+      GOOGLE_CLIENT_SECRET,
+      GOOGLE_REDIRECT_URI || "http://localhost:3000/oauth2callback"
+    );
+
+    oAuth2Client.setCredentials({
+      refresh_token: GOOGLE_REFRESH_TOKEN,
+    });
+
+    return oAuth2Client;
+  }
+
+  // Método 2: Fallback para arquivos JSON (compatibilidade)
   if (!fs.existsSync(CREDENTIALS_PATH)) {
     throw new Error(
-      `Arquivo de credenciais não encontrado: ${CREDENTIALS_PATH}\n` +
-        `Baixe as credenciais OAuth2 do Google Cloud Console e salve como 'oauth-credentials.json'`
+      `Autenticação não configurada!\n\n` +
+        `Configure as variáveis no .env:\n` +
+        `  - GOOGLE_CLIENT_ID\n` +
+        `  - GOOGLE_CLIENT_SECRET\n` +
+        `  - GOOGLE_REDIRECT_URI\n` +
+        `  - GOOGLE_REFRESH_TOKEN\n\n` +
+        `Execute: node src/authorize-env.js`
     );
   }
 
@@ -25,7 +54,6 @@ async function getAuthClient() {
     ({ client_id, client_secret, redirect_uris } = credentials.installed);
   } else if (credentials.web) {
     ({ client_id, client_secret } = credentials.web);
-    // Para credenciais web sem redirect_uris, usar urn:ietf:wg:oauth:2.0:oob (out-of-band)
     redirect_uris = credentials.web.redirect_uris || [
       "urn:ietf:wg:oauth:2.0:oob",
     ];
@@ -49,7 +77,7 @@ async function getAuthClient() {
   }
 
   throw new Error(
-    "Token não encontrado. Execute 'node src/authorize.js' para autorizar o aplicativo."
+    "Token não encontrado. Execute 'node src/authorize-env.js' para autorizar o aplicativo."
   );
 }
 
