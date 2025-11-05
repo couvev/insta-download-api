@@ -115,6 +115,70 @@ export async function addRowToSheet(sheetsUrl, data) {
       },
     });
 
+    // Extrair informações da linha inserida
+    const updatedRange = response.data.updates.updatedRange;
+    const match = updatedRange.match(/Videos!A(\d+):J(\d+)/);
+    
+    if (match) {
+      const rowIndex = parseInt(match[1]) - 1; // Converter para índice baseado em 0
+      
+      // Obter o sheetId da aba "Videos"
+      const spreadsheetInfo = await sheets.spreadsheets.get({
+        spreadsheetId,
+      });
+      
+      const videoSheet = spreadsheetInfo.data.sheets.find(
+        sheet => sheet.properties.title === "Videos"
+      );
+      
+      if (videoSheet) {
+        const sheetId = videoSheet.properties.sheetId;
+        
+        // Formatar a linha inserida: fundo branco, sem negrito, sem bordas
+        await sheets.spreadsheets.batchUpdate({
+          spreadsheetId,
+          resource: {
+            requests: [
+              {
+                updateCells: {
+                  range: {
+                    sheetId: sheetId,
+                    startRowIndex: rowIndex,
+                    endRowIndex: rowIndex + 1,
+                    startColumnIndex: 0,
+                    endColumnIndex: 10, // A até J (10 colunas)
+                  },
+                  fields: "userEnteredFormat(backgroundColor,textFormat,borders)",
+                  rows: [
+                    {
+                      values: Array(10).fill({
+                        userEnteredFormat: {
+                          backgroundColor: {
+                            red: 1,
+                            green: 1,
+                            blue: 1,
+                          },
+                          textFormat: {
+                            bold: false,
+                          },
+                          borders: {
+                            top: { style: "NONE" },
+                            bottom: { style: "NONE" },
+                            left: { style: "NONE" },
+                            right: { style: "NONE" },
+                          },
+                        },
+                      }),
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        });
+      }
+    }
+
     return {
       success: true,
       updatedRange: response.data.updates.updatedRange,
