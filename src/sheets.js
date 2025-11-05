@@ -103,7 +103,7 @@ export async function addRowToSheet(sheetsUrl, data) {
     const rowData = prepareRowData(data);
 
     // Adicionar a linha à planilha (aba Videos)
-    const range = "Videos!A:I";
+    const range = "Videos!A:J";
 
     const response = await sheets.spreadsheets.values.append({
       spreadsheetId,
@@ -174,6 +174,8 @@ function prepareRowData(data) {
     keywords = data.Keywords;
   }
 
+  const obs = data.obs || data["Obs"] || "";
+
   return [
     videoLink,
     contextoGeral,
@@ -183,6 +185,7 @@ function prepareRowData(data) {
     hookVisual,
     format,
     keywords,
+    obs,
     new Date().toISOString(),
   ];
 }
@@ -209,7 +212,7 @@ export async function createSurveySheet(title) {
               title: "Videos",
               gridProperties: {
                 rowCount: 1000,
-                columnCount: 10,
+                columnCount: 11,
                 frozenRowCount: 1, // Congelar linha de cabeçalho
               },
             },
@@ -234,13 +237,14 @@ export async function createSurveySheet(title) {
       "Hook Visual",
       "Format",
       "Keywords",
+      "Obs",
       "Used",
       "Created At",
     ];
 
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: "Videos!A1:J1",
+      range: "Videos!A1:K1",
       valueInputOption: "RAW",
       resource: {
         values: [headers],
