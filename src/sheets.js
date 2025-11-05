@@ -410,7 +410,7 @@ export async function getSheetData(sheetsUrl) {
 
     // Obter os dados da aba Videos
     const range = "Videos!A:J";
-    
+
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range,
@@ -428,16 +428,16 @@ export async function getSheetData(sheetsUrl) {
 
     // Primeira linha são os cabeçalhos
     const headers = rows[0];
-    
+
     // Converter as linhas em objetos JSON
-    const data = rows.slice(1).map(row => {
+    const data = rows.slice(1).map((row) => {
       const obj = {};
       headers.forEach((header, index) => {
         // Converter nome do cabeçalho para snake_case
         const key = header
           .toLowerCase()
-          .replace(/\s+/g, '_')
-          .replace(/[^\w_]/g, '');
+          .replace(/\s+/g, "_")
+          .replace(/[^\w_]/g, "");
         obj[key] = row[index] || "";
       });
       return obj;
@@ -451,8 +451,6 @@ export async function getSheetData(sheetsUrl) {
     };
   } catch (error) {
     console.error("Erro ao obter dados do Google Sheets:", error);
-    throw new Error(
-      `Erro ao obter dados do Google Sheets: ${error.message}`
-    );
+    throw new Error(`Erro ao obter dados do Google Sheets: ${error.message}`);
   }
 }

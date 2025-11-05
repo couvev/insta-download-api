@@ -3,7 +3,11 @@ import fastify from "fastify";
 
 import { fetchPostJson } from "./src/index.js";
 import { downloadVideoAsBase64 } from "./src/utils.js";
-import { addRowToSheet, createSurveySheet, getSheetData } from "./src/sheets.js";
+import {
+  addRowToSheet,
+  createSurveySheet,
+  getSheetData,
+} from "./src/sheets.js";
 import { addSurvey, searchSurveys, getAllSurveys } from "./src/surveys.js";
 
 const app = fastify();
@@ -168,8 +172,8 @@ app.get("/sheet-data/", async (request, reply) => {
 
   // Validação
   if (!sheets_url) {
-    return reply.status(400).send({ 
-      error: "O parâmetro 'sheets_url' é obrigatório" 
+    return reply.status(400).send({
+      error: "O parâmetro 'sheets_url' é obrigatório",
     });
   }
 
