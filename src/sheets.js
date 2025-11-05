@@ -118,23 +118,69 @@ export async function addRowToSheet(sheetsUrl, data) {
     // Extrair informações da linha inserida
     const updatedRange = response.data.updates.updatedRange;
     const match = updatedRange.match(/Videos!A(\d+):J(\d+)/);
-
+    
     if (match) {
       const rowIndex = parseInt(match[1]) - 1; // Converter para índice baseado em 0
-
+      
       // Obter o sheetId da aba "Videos"
       const spreadsheetInfo = await sheets.spreadsheets.get({
         spreadsheetId,
       });
-
+      
       const videoSheet = spreadsheetInfo.data.sheets.find(
-        (sheet) => sheet.properties.title === "Videos"
+        sheet => sheet.properties.title === "Videos"
       );
-
+      
       if (videoSheet) {
         const sheetId = videoSheet.properties.sheetId;
-
-        // Formatar a linha inserida: fundo branco, sem negrito, sem bordas
+        const videoLink = data.video_link || data["Video Link"] || "";
+        
+        // Preparar formatação para cada célula
+        const cellFormats = [
+          // Coluna A - Video Link (URL clicável, azul, sublinhado)
+          {
+            userEnteredValue: videoLink ? { formulaValue: `=HYPERLINK("${videoLink}", "Ver Vídeo")` } : { stringValue: "" },
+            userEnteredFormat: {
+              backgroundColor: { red: 1, green: 1, blue: 1 },
+              textFormat: {
+                bold: false,
+                foregroundColor: { red: 0.06, green: 0.46, blue: 0.78 },
+                underline: true,
+              },
+              borders: {
+                top: { style: "NONE" },
+                bottom: { style: "NONE" },
+                left: { style: "NONE" },
+                right: { style: "NONE" },
+              },
+              horizontalAlignment: "LEFT",
+              verticalAlignment: "MIDDLE",
+              wrapStrategy: "WRAP",
+            },
+          },
+          // Colunas B até J - Formatação padrão agradável
+          ...Array(9).fill(null).map(() => ({
+            userEnteredFormat: {
+              backgroundColor: { red: 1, green: 1, blue: 1 },
+              textFormat: {
+                bold: false,
+                foregroundColor: { red: 0.2, green: 0.2, blue: 0.2 },
+                fontSize: 10,
+              },
+              borders: {
+                top: { style: "NONE" },
+                bottom: { style: "NONE" },
+                left: { style: "NONE" },
+                right: { style: "NONE" },
+              },
+              horizontalAlignment: "LEFT",
+              verticalAlignment: "TOP",
+              wrapStrategy: "WRAP",
+            },
+          })),
+        ];
+        
+        // Formatar a linha inserida
         await sheets.spreadsheets.batchUpdate({
           spreadsheetId,
           resource: {
@@ -148,28 +194,10 @@ export async function addRowToSheet(sheetsUrl, data) {
                     startColumnIndex: 0,
                     endColumnIndex: 10, // A até J (10 colunas)
                   },
-                  fields:
-                    "userEnteredFormat(backgroundColor,textFormat,borders)",
+                  fields: "userEnteredValue,userEnteredFormat",
                   rows: [
                     {
-                      values: Array(10).fill({
-                        userEnteredFormat: {
-                          backgroundColor: {
-                            red: 1,
-                            green: 1,
-                            blue: 1,
-                          },
-                          textFormat: {
-                            bold: false,
-                          },
-                          borders: {
-                            top: { style: "NONE" },
-                            bottom: { style: "NONE" },
-                            left: { style: "NONE" },
-                            right: { style: "NONE" },
-                          },
-                        },
-                      }),
+                      values: cellFormats,
                     },
                   ],
                 },
