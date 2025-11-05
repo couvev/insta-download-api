@@ -118,22 +118,22 @@ export async function addRowToSheet(sheetsUrl, data) {
     // Extrair informações da linha inserida
     const updatedRange = response.data.updates.updatedRange;
     const match = updatedRange.match(/Videos!A(\d+):J(\d+)/);
-    
+
     if (match) {
       const rowIndex = parseInt(match[1]) - 1; // Converter para índice baseado em 0
-      
+
       // Obter o sheetId da aba "Videos"
       const spreadsheetInfo = await sheets.spreadsheets.get({
         spreadsheetId,
       });
-      
+
       const videoSheet = spreadsheetInfo.data.sheets.find(
-        sheet => sheet.properties.title === "Videos"
+        (sheet) => sheet.properties.title === "Videos"
       );
-      
+
       if (videoSheet) {
         const sheetId = videoSheet.properties.sheetId;
-        
+
         // Formatar a linha inserida: fundo branco, sem negrito, sem bordas
         await sheets.spreadsheets.batchUpdate({
           spreadsheetId,
@@ -148,7 +148,8 @@ export async function addRowToSheet(sheetsUrl, data) {
                     startColumnIndex: 0,
                     endColumnIndex: 10, // A até J (10 colunas)
                   },
-                  fields: "userEnteredFormat(backgroundColor,textFormat,borders)",
+                  fields:
+                    "userEnteredFormat(backgroundColor,textFormat,borders)",
                   rows: [
                     {
                       values: Array(10).fill({
