@@ -103,7 +103,7 @@ export async function addRowToSheet(sheetsUrl, data) {
     const rowData = prepareRowData(data);
 
     // Adicionar a linha à planilha (aba Videos)
-    const range = "Videos!A:K";
+    const range = "Videos!A:H";
 
     const response = await sheets.spreadsheets.values.append({
       spreadsheetId,
@@ -164,15 +164,6 @@ function prepareRowData(data) {
     format = data.Format;
   }
 
-  let contentPillars = "";
-  if (Array.isArray(data.content_pillars)) {
-    contentPillars = data.content_pillars.join(", ");
-  } else if (typeof data.content_pillars === "string") {
-    contentPillars = data.content_pillars;
-  } else if (data["Content Pillars"]) {
-    contentPillars = data["Content Pillars"];
-  }
-
   let keywords = "";
   if (Array.isArray(data.keywords)) {
     keywords = data.keywords.join(", ");
@@ -182,19 +173,6 @@ function prepareRowData(data) {
     keywords = data.Keywords;
   }
 
-  const views = data.views || data.Views || "";
-
-  let used = "";
-  if (data.used !== undefined) {
-    used = data.used ? "Sim" : "Não";
-  } else if (data.Used !== undefined) {
-    if (typeof data.Used === "boolean") {
-      used = data.Used ? "Sim" : "Não";
-    } else {
-      used = data.Used;
-    }
-  }
-
   return [
     videoLink,
     transcription,
@@ -202,10 +180,7 @@ function prepareRowData(data) {
     hookWritten,
     hookVisual,
     format,
-    contentPillars,
     keywords,
-    views,
-    used,
     new Date().toISOString(),
   ];
 }
@@ -232,7 +207,7 @@ export async function createSurveySheet(title) {
               title: "Videos",
               gridProperties: {
                 rowCount: 1000,
-                columnCount: 11,
+                columnCount: 9,
                 frozenRowCount: 1, // Congelar linha de cabeçalho
               },
             },
@@ -255,16 +230,14 @@ export async function createSurveySheet(title) {
       "Hook Written",
       "Hook Visual",
       "Format",
-      "Content Pillars",
       "Keywords",
-      "Views",
       "Used",
       "Created At",
     ];
 
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: "Videos!A1:K1",
+      range: "Videos!A1:I1",
       valueInputOption: "RAW",
       resource: {
         values: [headers],
