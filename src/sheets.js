@@ -103,7 +103,7 @@ export async function addRowToSheet(sheetsUrl, data) {
     const rowData = prepareRowData(data);
 
     // Adicionar a linha à planilha (aba Videos)
-    const range = "Videos!A:H";
+    const range = "Videos!A:I";
 
     const response = await sheets.spreadsheets.values.append({
       spreadsheetId,
@@ -147,6 +147,7 @@ function extractSpreadsheetId(url) {
 function prepareRowData(data) {
   // Suportar ambos os formatos: novo (flat) e antigo (nested)
   const videoLink = data.video_link || data["Video Link"] || "";
+  const contextoGeral = data.contexto_geral || data["Contexto Geral"] || "";
   const transcription = data.transcription || data["Transcription"] || "";
   const hookVerbal =
     data.hook_verbal || data["Hook Verbal"] || data.hook?.verbal || "";
@@ -175,6 +176,7 @@ function prepareRowData(data) {
 
   return [
     videoLink,
+    contextoGeral,
     transcription,
     hookVerbal,
     hookWritten,
@@ -207,7 +209,7 @@ export async function createSurveySheet(title) {
               title: "Videos",
               gridProperties: {
                 rowCount: 1000,
-                columnCount: 9,
+                columnCount: 10,
                 frozenRowCount: 1, // Congelar linha de cabeçalho
               },
             },
@@ -225,6 +227,7 @@ export async function createSurveySheet(title) {
     // Adicionar cabeçalhos
     const headers = [
       "Video Link",
+      "Contexto Geral",
       "Transcription",
       "Hook Verbal",
       "Hook Written",
@@ -237,7 +240,7 @@ export async function createSurveySheet(title) {
 
     await sheets.spreadsheets.values.update({
       spreadsheetId,
-      range: "Videos!A1:I1",
+      range: "Videos!A1:J1",
       valueInputOption: "RAW",
       resource: {
         values: [headers],
