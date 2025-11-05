@@ -3,7 +3,7 @@ import fastify from "fastify";
 
 import { fetchPostJson } from "./src/index.js";
 import { downloadVideoAsBase64 } from "./src/utils.js";
-import { addRowToSheet, createSurveySheet } from "./src/sheets.js";
+import { addRowToSheet, createSurveySheet, getSheetData } from "./src/sheets.js";
 import { addSurvey, searchSurveys, getAllSurveys } from "./src/surveys.js";
 
 const app = fastify();
@@ -155,6 +155,32 @@ app.get("/surveys/", async (request, reply) => {
     console.error("Erro ao buscar pesquisas:", error.message);
     reply.status(500).send({
       error: "Erro ao buscar pesquisas",
+      details: error.message,
+    });
+  }
+});
+
+// Endpoint para obter dados de uma planilha
+app.get("/sheet-data/", async (request, reply) => {
+  console.log("--> GET /sheet-data/", new Date().toLocaleString());
+
+  const { sheets_url } = request.query;
+
+  // Validação
+  if (!sheets_url) {
+    return reply.status(400).send({ 
+      error: "O parâmetro 'sheets_url' é obrigatório" 
+    });
+  }
+
+  try {
+    const result = await getSheetData(sheets_url);
+
+    reply.send(result);
+  } catch (error) {
+    console.error("Erro ao obter dados da planilha:", error.message);
+    reply.status(500).send({
+      error: "Erro ao obter dados da planilha",
       details: error.message,
     });
   }

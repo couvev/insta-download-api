@@ -389,3 +389,70 @@ export async function createSurveySheet(title) {
     throw new Error(`Erro ao criar planilha: ${error.message}`);
   }
 }
+
+/**
+ * Obtém todos os dados de uma planilha do Google Sheets
+ * @param {string} sheetsUrl - URL da planilha do Google Sheets
+ * @returns {object} - Dados da planilha em formato JSON
+ */
+export async function getSheetData(sheetsUrl) {
+  try {
+    // Extrair o ID da planilha da URL
+    const spreadsheetId = extractSpreadsheetId(sheetsUrl);
+
+    if (!spreadsheetId) {
+      throw new Error("URL da planilha inválida");
+    }
+
+    // Obter cliente autenticado
+    const auth = await getAuthClient();
+    const sheets = google.sheets({ version: "v4", auth });
+
+    // Obter os dados da aba Videos
+    const range = "Videos!A:J";
+    
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId,
+      range,
+    });
+
+    const rows = response.data.values;
+
+    if (!rows || rows.length === 0) {
+      return {
+        success: true,
+        total: 0,
+        data: [],
+      };
+    }
+
+    // Primeira linha são os cabeçalhos
+    const headers = rows[0];
+    
+    // Converter as linhas em objetos JSON
+    const data = rows.slice(1).map(row => {
+      const obj = {};
+      headers.forEach((header, index) => {
+        // Converter nome do cabeçalho para snake_case
+        const key = header
+          .toLowerCase()
+          .replace(/\s+/g, '_')
+          .replace(/[^\w_]/g, '');
+        obj[key] = row[index] || "";
+      });
+      return obj;
+    });
+
+    return {
+      success: true,
+      total: data.length,
+      headers: headers,
+      data: data,
+    };
+  } catch (error) {
+    console.error("Erro ao obter dados do Google Sheets:", error);
+    throw new Error(
+      `Erro ao obter dados do Google Sheets: ${error.message}`
+    );
+  }
+}
